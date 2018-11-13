@@ -2,12 +2,18 @@ import * as express from "express";
 import * as bodyparser from "body-parser";
 import Game from "./model/game";
 import ObjectDB from "./model/objectdb";
+import Publisher from "./model/publisher";
 
 const game_database:ObjectDB<Game> = new ObjectDB<Game>();
+const publisher_database:ObjectDB<Publisher> = new ObjectDB<Publisher>();
+
+// Create few producers
+publisher_database.insert(new Publisher("StudioCime", "123455677", "+3399898454"));
+publisher_database.insert(new Publisher("Bethesda", "8498984984", "+159899821"));
+publisher_database.insert(new Publisher("MarimoCorp", "84984984", "+651984984"));
 
 const app = express();
 app.use(bodyparser.urlencoded({extended: false}));
-
 
 // Get list
 app.get("/games", function(req, res, next)
@@ -30,6 +36,28 @@ app.get("/game/:id", function(req, res, next)
     {
         next("Game not found");
     }
+});
+
+// Get a publisher
+app.get("/game/publisher/:id", function(req, res, next)
+{
+    // First, get the game
+    const game = game_database.getOneById(parseInt(req.params.id));
+
+    if (game)
+    {
+        // Then, try to get the publisher
+        console.log("pub", game.publisher_id);
+        const publisher = publisher_database.getOneById(game.publisher_id);
+        if (publisher)
+        {
+            res.locals.data = publisher;
+            next();
+            return;
+        }
+    }
+
+    next("Game or publisher not found");
 });
 
 // Remove
