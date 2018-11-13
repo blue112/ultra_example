@@ -3,6 +3,11 @@ function query()
     curl -s $@ | jshon
 }
 
+if [[ $# != 1 ]]; then
+    echo "Usage: $0 <ip>"
+    exit 1
+fi
+
 echo "Create an entry"
 query -XPUT -d 'title=Game&price=19.99&publisher_id=1&tags=a,b,c&releaseDate=1542128639000' $1:3000/game
 echo "Create an entry"
