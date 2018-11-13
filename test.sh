@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function query()
 {
     curl -s $@ | jshon
