@@ -85,6 +85,42 @@ app.put("/game", function(req, res, next)
     next();
 });
 
+// Using post so it's harder to do it by mistake
+app.post("/process/updateGameAvailability", function(req, res, next)
+{
+    const DAY = 1000 * 3600 * 24;
+    const TWELVE_MONTHES = DAY * 365;
+    const EIGHTEEN_MONTHES = DAY * 547;
+    const now = new Date().getTime();
+
+    let deleted = 0;
+    let updated = 0;
+
+    // Get all titles
+    const list = game_database.getPublicList();
+
+    // Find thoses that should be removed or updated
+    for (let game of list)
+    {
+        const delta = now - game.releaseDate.getTime();
+        console.log(delta, game.releaseDate);
+        if (delta > EIGHTEEN_MONTHES)
+        {
+            game_database.remove(game.id);
+            deleted++;
+        }
+        else if (delta > TWELVE_MONTHES)
+        {
+            const new_price = game.price * 0.8;
+            game_database.update(game.id, { price: new_price });
+            updated++;
+        }
+    }
+
+    res.locals.data = {"success": "success", "deleted": deleted, "updated": updated};
+    next();
+});
+
 app.use(function(req, res, next)
 {
     if (res.locals.data != null)

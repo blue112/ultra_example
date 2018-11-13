@@ -19,4 +19,6 @@ Use the provided `test.sh` script or write curl commands to test API. Pass it th
 
 `./test.sh 172.17.0.2`
 
+# Things to improve
 
+* If you run twice the `process/updateGameAvailability` process, it will apply 20% on the game each time. It would be best to keep a flag into the object to know if it's on a discount or not.
