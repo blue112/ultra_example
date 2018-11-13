@@ -7,9 +7,8 @@ export default class Game
     private tags: Array<string>;
     private releaseDate: Date;
 
-    public constructor(id: number, title: string, price: string, publisher_id: string, tags: string, releaseDate: string)
+    public constructor(title: string, price: string, publisher_id: string, tags: string, releaseDate: string)
     {
-        this.id = id;
         this.title = title;
         this.price = parseFloat(price);
         this.publisher_id = parseInt(publisher_id);
@@ -55,6 +54,11 @@ export default class Game
             tags: this.tags,
             releaseDate: this.releaseDate
         };
+    }
+
+    public setId(new_id: number)
+    {
+        this.id = new_id;
     }
 
     public getId()

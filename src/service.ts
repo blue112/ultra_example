@@ -1,27 +1,29 @@
 import * as express from "express";
 import * as bodyparser from "body-parser";
 import Game from "./model/game";
+import ObjectDB from "./model/objectdb";
 
-const game_database:Array<Game> = [];
-const publishers_database:any = [];
+const game_database:ObjectDB<Game> = new ObjectDB<Game>();
 
 const app = express();
 app.use(bodyparser.urlencoded({extended: false}));
 
+
+// Get list
 app.get("/games", function(req, res, next)
 {
-    res.locals.data = game_database.map(g => g.getPublic());
+    res.locals.data = game_database.getPublicList();
     next();
 });
 
+// Get by id
 app.get("/game/:id", function(req, res, next)
 {
-    const id = req.params.id;
-    const game = game_database.find(g => g.getId() == id);
+    const game = game_database.getOneById(parseInt(req.params.id));
 
     if (game)
     {
-        res.locals.data = game.getPublic();
+        res.locals.data = game;
         next();
     }
     else
@@ -30,15 +32,13 @@ app.get("/game/:id", function(req, res, next)
     }
 });
 
-
+// Remove
 app.delete("/game/:id", function(req, res, next)
 {
-    const id = parseInt(req.params.id);
-    const game_pos = game_database.findIndex(g => g.getId() == id);
+    const deleted = game_database.remove(parseInt(req.params.id));
 
-    if (game_pos !== -1)
+    if (deleted)
     {
-        game_database.splice(game_pos, 1);
         res.locals.data = {"success": "success"};
         next();
     }
@@ -48,15 +48,14 @@ app.delete("/game/:id", function(req, res, next)
     }
 });
 
+// Update
 app.put("/game/:id", function(req, res, next)
 {
-    const id = req.params.id;
-    const game = game_database.find(g => g.getId() == id);
+    const updated_game = game_database.update(parseInt(req.params.id), req.body);
 
-    if (game)
+    if (updated_game)
     {
-        game.update(req.body);
-        res.locals.data = game.getPublic();
+        res.locals.data = updated_game;
         next();
     }
     else
@@ -65,6 +64,7 @@ app.put("/game/:id", function(req, res, next)
     }
 });
 
+// Create
 app.put("/game", function(req, res, next)
 {
     const {title, price, publisher_id, tags, releaseDate} = req.body;
@@ -78,16 +78,10 @@ app.put("/game", function(req, res, next)
 }, function(req, res, next)
 {
     const {title, price, publisher_id, tags, releaseDate} = req.body;
-    let id = 1;
-    if (game_database.length > 0)
-    {
-        id = game_database[game_database.length - 1].getId() + 1;
-    }
+    const game = new Game(title, price, publisher_id, tags, releaseDate);
+    const result = game_database.insert(game);
 
-    const game = new Game(id, title, price, publisher_id, tags, releaseDate);
-    game_database.push(game);
-
-    res.locals.data = game.getPublic();
+    res.locals.data = result;
     next();
 });
 
